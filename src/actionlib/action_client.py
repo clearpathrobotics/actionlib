@@ -57,6 +57,7 @@ import rospy
 from rospy import Header
 from actionlib_msgs.msg import *
 from actionlib.exceptions import *
+from nimbus_common import LockWrapper
 
 g_goal_id = 1
 
@@ -309,7 +310,7 @@ class CommStateMachine:
         self.send_cancel_fn = send_cancel_fn
 
         self.state = CommState.WAITING_FOR_GOAL_ACK
-        self.mutex = threading.RLock()
+        self.mutex = LockWrapper(threading.RLock(), "CommStateMachine.mutex")
         self.latest_goal_status = GoalStatus(status = GoalStatus.PENDING)
         self.latest_result = None
 
@@ -421,7 +422,7 @@ class GoalManager:
     # statuses - a list of weak references to CommStateMachine objects
 
     def __init__(self, ActionSpec):
-        self.list_mutex = threading.RLock()
+        self.list_mutex = LockWrapper(threading.RLock(), "GoalManager.list_mutex")
         self.statuses = []
         self.send_goal_fn = None
 

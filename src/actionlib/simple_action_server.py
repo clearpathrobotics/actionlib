@@ -39,6 +39,8 @@ from actionlib_msgs.msg import *
 from actionlib import ActionServer
 from actionlib.server_goal_handle import ServerGoalHandle;
 
+from nimbus_common import LockWrapper
+
 def nop_cb(goal_handle):
     pass
 
@@ -71,13 +73,13 @@ class SimpleActionServer:
         self.preempt_callback = None;
 
         self.need_to_terminate = False
-        self.terminate_mutex = threading.RLock();
+        self.terminate_mutex = LockWrapper(threading.RLock(),"SimpleActionServer.terminate_mutex");
 
         # since the internal_goal/preempt_callbacks are invoked from the
         # ActionServer while holding the self.action_server.lock
         # self.lock must always be locked after the action server lock
         # to avoid an inconsistent lock acquisition order
-        self.lock = threading.RLock();
+        self.lock = LockWrapper(threading.RLock(),"SimpleActionServer.lock");
 
         self.execute_condition = threading.Condition(self.lock);
 
@@ -310,6 +312,3 @@ class SimpleActionServer:
 
               with self.execute_condition:
                   self.execute_condition.wait(loop_duration.to_sec());
-
-
-

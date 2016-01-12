@@ -42,7 +42,7 @@ from actionlib.handle_tracker_deleter import HandleTrackerDeleter
 from actionlib.server_goal_handle import ServerGoalHandle
 
 from actionlib.exceptions import *
-
+from nimbus_common import LockWrapper
 
 def nop_cb(goal_handle):
     pass
@@ -94,7 +94,7 @@ class ActionServer:
         self.result_pub = None
         self.feedback_pub = None
 
-        self.lock = threading.RLock()
+        self.lock = LockWrapper(threading.RLock(), "ActionServer.lock")
 
         self.status_timer = None;
 
@@ -327,5 +327,3 @@ class ActionServer:
 
               status_array.header.stamp = rospy.Time.now()
               self.status_pub.publish(status_array)
-
-

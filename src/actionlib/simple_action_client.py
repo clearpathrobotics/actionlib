@@ -219,6 +219,13 @@ class SimpleActionClient:
     def stop_tracking_goal(self):
         self.gh = None
 
+    ## @brief Set timestamp delta for lost goal ack processing
+    ##
+    ## @param goal_ack_timeout Time from goal creation to wait for goal
+    ## ack from connected server.
+    def set_goal_ack_timeout(self, goal_ack_timeout):
+        self.action_client.set_goal_ack_timeout(goal_ack_timeout)
+
     def _handle_transition(self, gh):
         comm_state = gh.get_comm_state()
 

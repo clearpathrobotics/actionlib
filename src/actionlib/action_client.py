@@ -314,6 +314,8 @@ class CommStateMachine:
         self.latest_goal_status = GoalStatus(status=GoalStatus.PENDING)
         self.latest_result = None
 
+        self.goal_ack_timeout = rospy.Duration(0.0)
+
     def __eq__(self, o):
         return self.action_goal.goal_id.id == o.action_goal.goal_id.id
 
@@ -336,11 +338,14 @@ class CommStateMachine:
 
             status = _find_status_by_goal_id(status_array, self.action_goal.goal_id.id)
 
-            # You mean you haven't heard of me?
+            # You mean you haven't heard of me or this is an old goal waiting for status?
             if not status:
                 if self.state not in [CommState.WAITING_FOR_GOAL_ACK,
                                       CommState.WAITING_FOR_RESULT,
                                       CommState.DONE]:
+                    self._mark_as_lost()
+                elif self._is_goal_old(status_array.header.stamp) and (
+                     self.state == CommState.WAITING_FOR_GOAL_ACK):
                     self._mark_as_lost()
                 return
 
@@ -379,6 +384,16 @@ class CommStateMachine:
     def _mark_as_lost(self):
         self.latest_goal_status.status = GoalStatus.LOST
         self.transition_to(CommState.DONE)
+
+    ## @brief Is the goal's age beyond the lost-message delta?
+    ##
+    ## @param status_timestamp Timestamp from the server status message.
+    ##
+    ## @return True if the goal is older than the delta, otherwise False
+    def _is_goal_old(self, status_timestamp):
+        goal_ack_timeout = self.goal_ack_timeout
+        return (goal_ack_timeout > rospy.Duration(0.0) and
+                status_timestamp - self.action_goal.header.stamp > goal_ack_timeout)
 
     def update_result(self, action_result):
         # Might not be for us
@@ -425,6 +440,7 @@ class GoalManager:
         self.list_mutex = threading.RLock()
         self.statuses = []
         self.send_goal_fn = None
+        self.goal_ack_timeout = rospy.Duration(0.0)
 
         try:
             a = ActionSpec()
@@ -459,6 +475,8 @@ class GoalManager:
 
         csm = CommStateMachine(action_goal, transition_cb, feedback_cb,
                                self.send_goal_fn, self.cancel_fn)
+
+        csm.goal_ack_timeout = self.goal_ack_timeout
 
         with self.list_mutex:
             self.statuses.append(weakref.ref(csm))
@@ -611,6 +629,26 @@ class ActionClient:
             time.sleep(0.01)
 
         return started
+
+    ## @brief Set timestamp delta for lost goal ack processing
+    ##
+    ## @param goal_ack_timeout Time from goal creation to wait for goal
+    ## ack from connected server. A zero timeout disables the processing.
+    ##
+    ## When processing goals, compare timestamp of the goal and the
+    ## current status message. If the two differ by more than the delta,
+    ## consider the goal LOST.
+    def set_goal_ack_timeout(self, goal_ack_timeout):
+        if goal_ack_timeout is not None:
+            self.manager.goal_ack_timeout = goal_ack_timeout
+
+    ## @brief Get timestamp delta for lost goal processing
+    ##
+    ## When processing goals, compare timestamp of the goal and the
+    ## current status message. If the two differ by more than the delta,
+    ## consider the goal LOST.
+    def get_goal_ack_timeout(self):
+        return self.manager.goal_ack_timeout
 
     def _status_cb(self, msg):
         self.last_status_msg = msg

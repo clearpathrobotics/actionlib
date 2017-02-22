@@ -311,7 +311,9 @@ class CommStateMachine:
         self.send_cancel_fn = send_cancel_fn
 
         self.state = CommState.WAITING_FOR_GOAL_ACK
-        self.mutex = LockWrapper(threading.RLock(), "CommStateMachine.mutex")
+        self.mutex = LockWrapper(threading.RLock(), "CommStateMachine({}).mutex".format(
+            action_goal.goal_id.id
+        ))
         self.latest_goal_status = GoalStatus(status=GoalStatus.PENDING)
         self.latest_result = None
 
@@ -438,7 +440,7 @@ class GoalManager:
     # statuses - a list of weak references to CommStateMachine objects
 
     def __init__(self, ActionSpec):
-        self.list_mutex = LockWrapper(threading.RLock(), "GoalManager.list_mutex")
+        self.list_mutex = LockWrapper(threading.RLock(), "GoalManager({}).list_mutex".format(ActionSpec.__name__))
         self.statuses = []
         self.send_goal_fn = None
         self.goal_ack_timeout = rospy.Duration(0.0)

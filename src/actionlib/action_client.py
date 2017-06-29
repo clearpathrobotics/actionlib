@@ -374,9 +374,11 @@ class CommStateMachine:
                     self.transition_to(next_state)
 
     def transition_to(self, state):
-        rospy.logdebug("Transitioning to %s (from %s, goal: %s)",
-                       CommState.to_string(state), CommState.to_string(self.state),
-                       self.action_goal.goal_id.id)
+        latest_goal_status = self.latest_goal_status
+        rospy.loginfo("Transitioning to %s (from %s, goal: %s, status: %s, text: \'%s\')",
+                      CommState.to_string(state), CommState.to_string(self.state),
+                      self.action_goal.goal_id.id, latest_goal_status.status, latest_goal_status.text)
+
         self.state = state
         if self.transition_cb:
             self.transition_cb(ClientGoalHandle(self))

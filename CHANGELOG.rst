@@ -2,6 +2,71 @@
 Changelog for package actionlib
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.12 (2017-12-18)
+--------------------
+* fix uncrustify mixup (`#92 <https://github.com/ros/actionlib/issues/92>`_)
+* Contributors: Mikael Arguedas
+
+1.11.11 (2017-10-27)
+--------------------
+* fix typo in server_goal_handle_imp.h (`#89 <https://github.com/ros/actionlib/issues/89>`_)
+* Use RAII to handle mutexes (`#87 <https://github.com/ros/actionlib/issues/87>`_)
+* Contributors: Cong Liu, Esteve Fernandez, Mikael Arguedas
+
+1.11.10 (2017-07-27)
+--------------------
+* Clang tidy fixes (`#86 <https://github.com/ros/actionlib/issues/86>`_)
+* C++ style (`#72 <https://github.com/ros/actionlib/issues/72>`_)
+* Proper return value after assert (`#83 <https://github.com/ros/actionlib/issues/83>`_)
+* switch to package format 2 (`#82 <https://github.com/ros/actionlib/issues/82>`_)
+* remove trailing whitespaces (`#81 <https://github.com/ros/actionlib/issues/81>`_)
+* lock listhandle earlier in getCommState in client_goal_handle_imp. active bool critical (`#77 <https://github.com/ros/actionlib/issues/77>`_)
+* add missing runtime dependencies (`#79 <https://github.com/ros/actionlib/issues/79>`_)
+* Contributors: Esteve Fernandez, Mikael Arguedas, johaq
+
+1.11.9 (2017-03-27)
+-------------------
+* Python3 compatibility + pep8 compliance (`#71 <https://github.com/ros/actionlib/issues/71>`_) follow-up of (`#43 <https://github.com/ros/actionlib/issues/43>`_)
+* - wait for ros::Time::now to become valid before init of connection_monitor (`#62 <https://github.com/ros/actionlib/issues/62>`_)
+  - bugfix : connection_monitor should wait for result
+* fixed default value for rosparam. closes `#69 <https://github.com/ros/actionlib/issues/69>`_ (`#70 <https://github.com/ros/actionlib/issues/70>`_)
+* Contributors: 1r0b1n0, Mikael Arguedas, Piyush Khandelwal
+
+1.11.8 (2017-02-17)
+-------------------
+* Fixes a deadlock (`#64 <https://github.com/ros/actionlib/issues/64>`_)
+* Removed unused variables warnings (`#63 <https://github.com/ros/actionlib/issues/63>`_ `#65 <https://github.com/ros/actionlib/issues/65>`_)
+* If using sim time, wait for /clock (`#59 <https://github.com/ros/actionlib/issues/59>`_)
+* add parameters to configure queue sizes (`#55 <https://github.com/ros/actionlib/pull/55>`_)
+* Contributors: Esteve Fernandez, Jonathan Meyer, Mikael Arguedas, Patrick Beeson, Robin Vanhove
+
+1.11.7 (2016-10-24)
+-------------------
+* Merge pull request `#57 <https://github.com/ros/actionlib/issues/57>`_ from stonier/patch-1
+  Remove misleading error log
+* Remove misleading error log
+  This was introduced in https://github.com/ros/actionlib/pull/43.
+  It is not actually correct - you can feasibly get feedback here before a new goal is confirmed. See `send_goal()`....
+  ```
+  def send_goal(self, goal, done_cb=None, active_cb=None, feedback_cb=None):
+  # destroys the old goal handle
+  self.stop_tracking_goal()
+  ...
+  self.gh = self.action_client.send_goal(goal, self._handle_transition, self._handle_feedback)
+  ```
+  and of course it will take more time on top of this for the server to actually process the incoming goal and confirm it. Meantime, it may have sent us feedback messages.
+* Improved the const-correctness of some actionlib classes. (`#50 <https://github.com/ros/actionlib/issues/50>`_)
+* Issue `#51 <https://github.com/ros/actionlib/issues/51>`_: Remove annoying debug messages that make useless to enable debug on Python nodes, as they overwhelm less spamming messages (`#54 <https://github.com/ros/actionlib/issues/54>`_)
+* reduce change of unncessary exception on shutdown bu checking directly in before publishing for a shutdown (`#53 <https://github.com/ros/actionlib/issues/53>`_)
+* Contributors: Blake Anderson, Daniel Stonier, Jorge Santos Simón, Mikael Arguedas, uliklank
+
+1.11.6 (2016-06-22)
+-------------------
+* Python code cleanup (`#43 <https://github.com/ros/actionlib/issues/43>`_)
+  * Cleaned up semicolons, indentation, spaces.
+  * Removed unused local var after further confirmation of no risk of side effects.
+* Contributors: Andrew Blakey
+
 1.11.5 (2016-03-14)
 -------------------
 * update maintainer
@@ -20,7 +85,7 @@ Changelog for package actionlib
 
 1.11.4 (2015-04-22)
 -------------------
-* Initialize execute_thread_ to NULL
+* Initialize `execute_thread_` to NULL
 * Contributors: Esteve Fernandez
 
 1.11.3 (2014-12-23)
@@ -37,7 +102,7 @@ Changelog for package actionlib
 
 1.11.1 (2014-05-08)
 -------------------
-* Fix uninitialised execute_thread_ member pointer
+* Fix uninitialised `execute_thread_` member pointer
 * Make rostest in CMakeLists optional
 * Use catkin_install_python() to install Python scripts
 * Contributors: Dirk Thomas, Esteve Fernandez, Jordi Pages, Lukas Bulwahn
